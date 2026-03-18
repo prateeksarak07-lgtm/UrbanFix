@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UrbanFix — Smart City Complaint System</title>
+<link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+<!-- NAV -->
+<div id="nav">
+  <div class="logo"><div class="logo-sq">🏙</div>UrbanFix</div>
+  <div class="tabs">
+    <button class="tab on" onclick="sw('citizen')">🏠 Citizen Portal</button>
+    <button class="tab"    onclick="sw('govt')">🏛 Gov Dashboard</button>
+    <button class="tab"    onclick="sw('map')">🗺 Live Map</button>
+  </div>
+  <button class="notif" onclick="toast('📢 System','3 complaints resolved today')">🔔<span class="nbadge"></span></button>
+</div>
+
+<!-- SPINNER -->
+<div class="spinner-overlay" id="spinner-overlay">
+  <div class="spinner"></div>
+  <div class="spinner-text" id="spinner-text">Loading…</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     CITIZEN PAGE
+════════════════════════════════════════════════════ -->
+<div class="page on" id="citizen-page">
+  <div class="hero">
+    <div class="hero-glow"></div>
+    <div class="eyebrow">Smart City Initiative 2025</div>
+    <h1 class="h1">Report City<br>Issues <em>Instantly.</em></h1>
+    <p class="hero-sub">Submit potholes, garbage overflow, broken streetlights, or water leakage directly to the right department — with photo, location &amp; real-time tracking.</p>
+    <div class="hero-btns">
+      <button class="btn-r" onclick="document.getElementById('rform').scrollIntoView({behavior:'smooth'})">📷 Report an Issue</button>
+      <button class="btn-w" onclick="sw('map')">🗺 View Live Map</button>
+    </div>
+    <div class="hstats">
+      <div><div class="hsv" id="hs1">0</div><div class="hsl">Total complaints</div></div>
+      <div><div class="hsv" style="color:#ff7b5a" id="hs2">0</div><div class="hsl">Resolved this year</div></div>
+      <div><div class="hsv">4.2d</div><div class="hsl">Avg resolution</div></div>
+      <div><div class="hsv">96%</div><div class="hsl">Satisfaction rate</div></div>
+    </div>
+  </div>
+
+  <div class="cbody">
+    <div class="sh rv"><h2>What's the Problem?</h2><p>Select an issue type — your complaint routes to the right department automatically.</p></div>
+
+    <!-- Issue type selector -->
+    <div class="itype-grid rv" id="itype-grid">
+      <div class="icard sel" data-t="Pothole / Road" onclick="pickType(this)">
+        <span class="iemoji">🛣️</span>
+        <div class="iname">Pothole / Road</div>
+        <div class="icnt">Loading…</div>
+        <div class="iurgent">!</div>
+      </div>
+      <div class="icard" data-t="Garbage / Waste" onclick="pickType(this)">
+        <span class="iemoji">🗑️</span>
+        <div class="iname">Garbage / Waste</div>
+        <div class="icnt">Loading…</div>
+      </div>
+      <div class="icard" data-t="Broken Streetlight" onclick="pickType(this)">
+        <span class="iemoji">💡</span>
+        <div class="iname">Broken Streetlight</div>
+        <div class="icnt">Loading…</div>
+      </div>
+      <div class="icard" data-t="Water Leakage" onclick="pickType(this)">
+        <span class="iemoji">💧</span>
+        <div class="iname">Water Leakage</div>
+        <div class="icnt">Loading…</div>
+      </div>
+    </div>
+
+    <!-- Report form + sidebar -->
+    <div id="rform" class="rform-grid">
+
+      <!-- Main form -->
+      <div class="fpanel rv">
+        <div class="fptitle">File Your Complaint</div>
+        <div class="fpsub">Fields marked * are required. Your report is encrypted &amp; sent directly to the municipal system.</div>
+
+        <div class="frow">
+          <div class="field">
+            <label class="fl">Your Name *</label>
+            <input type="text" id="fn" placeholder="Full name" autocomplete="name">
+          </div>
+          <div class="field">
+            <label class="fl">Contact *</label>
+            <input type="text" id="fc" placeholder="Phone or email" autocomplete="tel">
+          </div>
+        </div>
+
+        <div class="frow">
+          <div class="field">
+            <label class="fl">Ward / Area *</label>
+            <select id="fw">
+              <option value="">Select ward…</option>
+              <option>Ward 1 — Central Market</option>
+              <option>Ward 2 — North Residential</option>
+              <option>Ward 3 — Industrial Zone</option>
+              <option>Ward 4 — Old Town</option>
+              <option>Ward 5 — South Park</option>
+              <option>Ward 6 — Tech Corridor</option>
+              <option>Ward 7 — East Village</option>
+              <option>Ward 8 — West End</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="fl">Issue Type *</label>
+            <select id="ft">
+              <option>Pothole / Road</option>
+              <option>Garbage / Waste</option>
+              <option>Broken Streetlight</option>
+              <option>Water Leakage</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="fl">Description *</label>
+          <textarea id="fd" maxlength="500"
+            placeholder="Describe the issue clearly — nearby landmark, how long it's been there, severity…"
+            oninput="this.nextElementSibling.textContent=this.value.length+'/500'"></textarea>
+          <div class="char-hint">0/500</div>
+        </div>
+
+        <div class="field">
+          <label class="fl">Priority *</label>
+          <div class="prio-row" id="prow">
+            <div class="popt"    onclick="setPrio(this,'pl')">🟢 Low</div>
+            <div class="popt pm" onclick="setPrio(this,'pm')">🟡 Medium</div>
+            <div class="popt"    onclick="setPrio(this,'ph')">🔴 High / Urgent</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="fl">Upload Photo *</label>
+          <div class="photo-drop" id="pdrop" onclick="doUpload()">
+            <div style="font-size:26px;margin-bottom:7px" id="pdico">📸</div>
+            <div id="pdtxt" style="font-weight:600;font-size:14px;color:var(--text2)">Click to upload photo evidence</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:3px">JPG, PNG, WebP up to 10 MB · Helps speed up resolution</div>
+          </div>
+          <div class="photo-thumbs" id="pthumbs">
+            <div class="thumb">📷</div>
+            <div class="thumb" style="opacity:.45">+</div>
+            <div class="thumb" style="opacity:.2">+</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="fl">📍 Pin Your Location *</label>
+          <div class="loc-box" id="locbox" onclick="pinLoc(this)">
+            <svg viewBox="0 0 600 190" xmlns="http://www.w3.org/2000/svg" width="100%" height="190">
+              <rect width="600" height="190" fill="#e8e4dc"/>
+              <g stroke="rgba(0,0,0,0.065)" stroke-width="1" fill="none">
+                <line x1="0" y1="47" x2="600" y2="47"/><line x1="0" y1="94" x2="600" y2="94"/>
+                <line x1="0" y1="141" x2="600" y2="141"/>
+                <line x1="100" y1="0" x2="100" y2="190"/><line x1="200" y1="0" x2="200" y2="190"/>
+                <line x1="300" y1="0" x2="300" y2="190"/><line x1="400" y1="0" x2="400" y2="190"/>
+                <line x1="500" y1="0" x2="500" y2="190"/>
+              </g>
+              <path d="M0,95 L600,95"   stroke="#c4beaf" stroke-width="20" fill="none"/>
+              <path d="M300,0 L300,190" stroke="#c4beaf" stroke-width="20" fill="none"/>
+              <path d="M0,95 L600,95"   stroke="rgba(255,255,255,.45)" stroke-width="2" stroke-dasharray="20 14" fill="none"/>
+              <path d="M300,0 L300,190" stroke="rgba(255,255,255,.45)" stroke-width="2" stroke-dasharray="20 14" fill="none"/>
+              <rect x="12"  y="12"  width="165" height="70" rx="7" fill="#e0dbcf"/>
+              <rect x="12"  y="110" width="165" height="70" rx="7" fill="#e0dbcf"/>
+              <rect x="325" y="12"  width="165" height="70" rx="7" fill="#e0dbcf"/>
+              <rect x="325" y="110" width="165" height="70" rx="7" fill="#e0dbcf"/>
+              <rect x="210" y="30"  width="64"  height="52" rx="6" fill="#d5d0c6"/>
+              <ellipse cx="500" cy="147" rx="80" ry="36" fill="#b8d4a0"/>
+              <text x="500" y="151" text-anchor="middle" font-size="10" fill="rgba(0,0,0,.3)" font-family="sans-serif">Park</text>
+              <circle id="lpin"  cx="0" cy="0" r="0"   fill="var(--accent)" opacity="0"/>
+              <text   id="lpint" x="0"  y="0"  font-size="18" opacity="0" text-anchor="middle">📍</text>
+            </svg>
+            <div class="loc-lbl" id="lloc">Click to pin your exact location</div>
+          </div>
+        </div>
+
+        <button class="sbtn" onclick="doSubmit()">🚀 Submit to Municipal System</button>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="sbar">
+        <div class="scard rv">
+          <div class="sctitle">💡 Tips for Faster Resolution</div>
+          <ul class="tips">
+            <li>Take a clear daytime photo showing the full issue</li>
+            <li>Pin exact location — better than a text address</li>
+            <li>Use High/Urgent only for safety hazards</li>
+            <li>Add a nearby landmark in the description</li>
+            <li>Save your Complaint ID to track via SMS</li>
+          </ul>
+        </div>
+        <div class="scard rv">
+          <div class="sctitle">📋 Recent Reports Near You</div>
+          <div id="rlist"><div style="color:var(--text3);font-size:13px">Loading…</div></div>
+        </div>
+        <div class="scard rv">
+          <div class="sctitle">📊 This Week</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap" id="week-stats">
+            <div style="text-align:center;flex:1"><div style="font-family:var(--font);font-weight:900;font-size:26px;color:var(--green)" id="ws-res">—</div><div style="font-size:11px;color:var(--text3)">Resolved</div></div>
+            <div style="text-align:center;flex:1"><div style="font-family:var(--font);font-weight:900;font-size:26px;color:var(--amber)" id="ws-prog">—</div><div style="font-size:11px;color:var(--text3)">In Progress</div></div>
+            <div style="text-align:center;flex:1"><div style="font-family:var(--font);font-weight:900;font-size:26px;color:var(--blue)" id="ws-new">—</div><div style="font-size:11px;color:var(--text3)">New Today</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     GOVERNMENT DASHBOARD
+════════════════════════════════════════════════════ -->
+<div class="page" id="govt-page">
+  <div class="glayout">
+
+    <!-- Sidebar nav -->
+    <div class="gside">
+      <div class="gslbl">Overview</div>
+      <div class="gsitem on" onclick="switchSec('overview',this)"><span>📊</span> Dashboard</div>
+      <div class="gsitem"    onclick="switchSec('complaints',this)"><span>📋</span> All Complaints <span class="gsbadge" id="nbadge">…</span></div>
+      <div class="gslbl">Operations</div>
+      <div class="gsitem" onclick="switchSec('workers',this)"><span>👷</span> Assign Workers</div>
+      <div class="gsitem" onclick="switchSec('analytics',this)"><span>📈</span> Analytics</div>
+      <div class="gslbl">Settings</div>
+      <div class="gsitem" onclick="toast('⚙️ Settings','Department management panel')"><span>⚙️</span> Departments</div>
+      <div class="gsitem" onclick="toast('🔔 Alerts','Configure escalation rules')"><span>🔔</span> Alert Rules</div>
+    </div>
+
+    <!-- Main area -->
+    <div class="gmain">
+
+      <!-- OVERVIEW -->
+      <div class="gsec on" id="sec-overview">
+        <div class="ptitle">Good morning, Commissioner 👋</div>
+        <div class="psub" id="dash-date">Loading dashboard…</div>
+        <div class="mgrid" id="mgrid">
+          <!-- populated by JS -->
+        </div>
+        <div class="cgrid">
+          <div class="ccard"><div class="cctitle">Complaints by Category</div><div class="barchart" id="catcg"></div></div>
+          <div class="ccard">
+            <div class="cctitle">Resolution Breakdown</div>
+            <div class="donut-row">
+              <svg width="115" height="115" viewBox="0 0 115 115">
+                <circle cx="57" cy="57" r="44" fill="none" stroke="var(--paper2)" stroke-width="17"/>
+                <circle cx="57" cy="57" r="44" fill="none" stroke="var(--green)" stroke-width="17" stroke-dasharray="185 91"  stroke-dashoffset="0"    transform="rotate(-90 57 57)"/>
+                <circle cx="57" cy="57" r="44" fill="none" stroke="var(--amber)" stroke-width="17" stroke-dasharray="65 211"  stroke-dashoffset="-185" transform="rotate(-90 57 57)"/>
+                <circle cx="57" cy="57" r="44" fill="none" stroke="var(--red)"   stroke-width="17" stroke-dasharray="26 250"  stroke-dashoffset="-250" transform="rotate(-90 57 57)"/>
+                <text x="57" y="54" text-anchor="middle" font-family="Cabinet Grotesk,sans-serif" font-weight="900" font-size="18" fill="var(--text)">—</text>
+                <text x="57" y="68" text-anchor="middle" font-size="10" fill="var(--text3)">resolved</text>
+              </svg>
+              <div class="dleg">
+                <div class="dli"><div class="dldot" style="background:var(--green)"></div>Resolved<span class="dlpct">—</span></div>
+                <div class="dli"><div class="dldot" style="background:var(--amber)"></div>In Progress<span class="dlpct">—</span></div>
+                <div class="dli"><div class="dldot" style="background:var(--red)"></div>Other<span class="dlpct">—</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="twrap">
+          <div class="thead">
+            <div class="tttl">Latest Complaints</div>
+            <button class="abtn" onclick="switchSec('complaints',document.querySelectorAll('.gsitem')[1])">View All →</button>
+          </div>
+          <div id="qtable"></div>
+        </div>
+      </div>
+
+      <!-- ALL COMPLAINTS -->
+      <div class="gsec" id="sec-complaints">
+        <div class="ptitle">All Complaints</div>
+        <div class="psub">Manage, assign, and resolve every reported civic issue.</div>
+        <div class="twrap">
+          <div class="thead">
+            <div class="tttl">Complaint Registry</div>
+            <div class="tctrl">
+              <input class="tsearch" id="tsearch" placeholder="🔍 Search…" oninput="filt()">
+              <select class="tsel" id="fstat" onchange="filt()">
+                <option value="">All Status</option>
+                <option>New</option><option>In Progress</option>
+                <option>Resolved</option><option>Urgent</option>
+              </select>
+              <select class="tsel" id="ftype" onchange="filt()">
+                <option value="">All Types</option>
+                <option>Pothole</option><option>Garbage</option>
+                <option>Streetlight</option><option>Water</option>
+              </select>
+            </div>
+          </div>
+          <div style="overflow-x:auto" id="mtable"></div>
+        </div>
+      </div>
+
+      <!-- WORKERS -->
+      <div class="gsec" id="sec-workers">
+        <div class="ptitle">Assign Field Workers</div>
+        <div class="psub">View available workers and assign them to open complaints.</div>
+        <div class="wgrid" id="wgrid"></div>
+        <div class="twrap">
+          <div class="thead"><div class="tttl">Unassigned Complaints</div></div>
+          <div id="utable"></div>
+        </div>
+      </div>
+
+      <!-- ANALYTICS -->
+      <div class="gsec" id="sec-analytics">
+        <div class="ptitle">Analytics &amp; Insights</div>
+        <div class="psub">Performance metrics across all 8 wards and departments.</div>
+        <div class="mgrid" id="amgrid">
+          <div class="mc"><div class="mctop"><div class="mico" style="background:rgba(8,145,178,.1)">🏆</div><div class="mdelta dup">Best</div></div><div class="mval" style="color:var(--cyan)">W-5</div><div class="mlbl">Fastest resolving ward</div></div>
+          <div class="mc"><div class="mctop"><div class="mico" style="background:rgba(22,163,74,.1)">⚡</div><div class="mdelta dup">+22%</div></div><div class="mval" style="color:var(--green)">1.9d</div><div class="mlbl">Best dept avg time</div></div>
+          <div class="mc"><div class="mctop"><div class="mico" style="background:rgba(232,75,47,.1)">📸</div><div class="mdelta dne" id="photo-pct">—</div></div><div class="mval" id="photo-cnt">—</div><div class="mlbl">With photo evidence</div></div>
+          <div class="mc"><div class="mctop"><div class="mico" style="background:rgba(37,99,235,.1)">👥</div><div class="mdelta dup" id="worker-cnt">—</div></div><div class="mval" id="worker-val">—</div><div class="mlbl">Active field workers</div></div>
+        </div>
+        <div class="cgrid">
+          <div class="ccard"><div class="cctitle">Complaints by Ward</div><div id="wardch"></div></div>
+          <div class="ccard"><div class="cctitle">Last 7 Days Volume</div><div id="weekch"></div></div>
+        </div>
+      </div>
+
+    </div><!-- /gmain -->
+  </div><!-- /glayout -->
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     LIVE MAP PAGE
+════════════════════════════════════════════════════ -->
+<div class="page" id="map-page">
+  <div class="mlayout">
+
+    <!-- Sidebar -->
+    <div class="mside">
+      <div class="mshead">
+        <h3>Live Complaint Map</h3>
+        <div class="mfrow">
+          <div class="mfc on fall"    onclick="mfilt('all',this)">All</div>
+          <div class="mfc froad"      onclick="mfilt('road',this)">🛣 Road</div>
+          <div class="mfc fwater"     onclick="mfilt('water',this)">💧 Water</div>
+          <div class="mfc flight"     onclick="mfilt('light',this)">💡 Light</div>
+          <div class="mfc fgarbage"   onclick="mfilt('garbage',this)">🗑 Garbage</div>
+          <div class="mfc furgent"    onclick="mfilt('urgent',this)">🚨 Urgent</div>
+        </div>
+      </div>
+      <div class="mclist" id="mclist">
+        <div style="color:var(--text3);font-size:13px;padding:16px">Loading complaints…</div>
+      </div>
+    </div>
+
+    <!-- Map canvas -->
+    <div class="mcanvas" id="mcanvas">
+      <svg id="cmap" viewBox="0 0 1000 642" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+        <rect width="1000" height="642" fill="#ddd8ce"/>
+        <!-- roads -->
+        <g fill="none" stroke="#c4beaf" stroke-width="24" stroke-linecap="round">
+          <path d="M0,321 L1000,321"/><path d="M500,0 L500,642"/>
+          <path d="M0,160 L450,160 L550,260 L1000,260"/>
+          <path d="M0,480 L450,480 L550,382 L1000,382"/>
+          <path d="M222,0 L222,642"/><path d="M778,0 L778,642"/>
+        </g>
+        <g fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2" stroke-dasharray="22 15">
+          <path d="M0,321 L1000,321"/><path d="M500,0 L500,642"/>
+          <path d="M222,0 L222,642"/><path d="M778,0 L778,642"/>
+        </g>
+        <!-- city blocks -->
+        <rect x="12"  y="12"  width="188" height="112" rx="8" fill="#e0dbcf"/>
+        <rect x="12"  y="175" width="188" height="110" rx="8" fill="#e0dbcf"/>
+        <rect x="12"  y="342" width="188" height="105" rx="8" fill="#e0dbcf"/>
+        <rect x="12"  y="496" width="188" height="135" rx="8" fill="#e0dbcf"/>
+        <rect x="254" y="12"  width="224" height="116" rx="8" fill="#e0dbcf"/>
+        <rect x="254" y="180" width="108" height="100" rx="8" fill="#e6e0d4"/>
+        <rect x="254" y="342" width="224" height="105" rx="8" fill="#e0dbcf"/>
+        <rect x="254" y="496" width="224" height="135" rx="8" fill="#e0dbcf"/>
+        <rect x="522" y="12"  width="224" height="116" rx="8" fill="#e0dbcf"/>
+        <rect x="522" y="280" width="224" height="68"  rx="8" fill="#e0dbcf"/>
+        <rect x="522" y="398" width="224" height="78"  rx="8" fill="#e0dbcf"/>
+        <rect x="522" y="496" width="224" height="135" rx="8" fill="#e0dbcf"/>
+        <rect x="800" y="12"  width="186" height="64"  rx="8" fill="#e0dbcf"/>
+        <rect x="800" y="120" width="186" height="100" rx="8" fill="#e0dbcf"/>
+        <rect x="800" y="280" width="186" height="82"  rx="8" fill="#e0dbcf"/>
+        <rect x="800" y="398" width="186" height="232" rx="8" fill="#e0dbcf"/>
+        <!-- park -->
+        <ellipse cx="375" cy="252" rx="72" ry="48" fill="#b8d4a0"/>
+        <text x="375" y="256" text-anchor="middle" font-size="11" fill="rgba(0,0,0,.3)" font-family="sans-serif">Central Park</text>
+        <!-- ward labels -->
+        <text x="106" y="292" text-anchor="middle" font-size="10" fill="rgba(0,0,0,.18)" font-family="sans-serif" font-weight="bold">WARD 1</text>
+        <text x="366" y="292" text-anchor="middle" font-size="10" fill="rgba(0,0,0,.18)" font-family="sans-serif" font-weight="bold">WARD 2</text>
+        <text x="634" y="142" text-anchor="middle" font-size="10" fill="rgba(0,0,0,.18)" font-family="sans-serif" font-weight="bold">WARD 3</text>
+        <text x="893" y="86"  text-anchor="middle" font-size="10" fill="rgba(0,0,0,.18)" font-family="sans-serif" font-weight="bold">WARD 4</text>
+        <text x="106" y="450" text-anchor="middle" font-size="10" fill="rgba(0,0,0,.18)" font-family="sans-serif" font-weight="bold">WARD 5</text>
+        <text x="366" y="580" text-anchor="middle" font-size="10" fill="rgba(0,0,0,.18)" font-family="sans-serif" font-weight="bold">WARD 6</text>
+        <text x="634" y="580" text-anchor="middle" font-size="10" fill="rgba(0,0,0,.18)" font-family="sans-serif" font-weight="bold">WARD 7</text>
+        <text x="893" y="580" text-anchor="middle" font-size="10" fill="rgba(0,0,0,.18)" font-family="sans-serif" font-weight="bold">WARD 8</text>
+      </svg>
+      <div class="mpopup" id="mpopup"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div class="mobg" id="modbg">
+  <div class="mobox">
+    <div class="moemo">🎯</div>
+    <div class="motitle">Report Submitted!</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:6px">Your Complaint ID</div>
+    <div class="moid" id="modid">UF-2025-XXXX</div>
+    <div class="mosub">
+      Routed to <strong id="moddept">Public Works Dept</strong>.<br>
+      SMS confirmation sent. Expected resolution: <strong>3–5 working days.</strong>
+    </div>
+    <button class="mocbtn" onclick="document.getElementById('modbg').classList.remove('on')">Got it, thanks!</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="tst" id="tst">
+  <div class="ttico" id="ttico"></div>
+  <div>
+    <div class="ttt" id="ttt"></div>
+    <div class="tts" id="tts"></div>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+  // Set dashboard date
+  const dd = document.getElementById('dash-date');
+  if (dd) {
+    dd.textContent = 'City snapshot — ' + new Date().toLocaleDateString('en-IN', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+  }
+  // Update analytics cards once stats load
+  window.addEventListener('statsloaded', e => {
+    const s = e.detail;
+    const pc = document.getElementById('photo-cnt');
+    const pp = document.getElementById('photo-pct');
+    const wv = document.getElementById('worker-val');
+    const wc = document.getElementById('worker-cnt');
+    if (pc) pc.textContent = s.total;
+    if (pp) pp.textContent = '~98%';
+    if (wv) wv.textContent = State.workers.length || '—';
+    if (wc) wc.textContent = '+' + (State.workers.length || 0);
+    // Week stats
+    const ws = document.getElementById('ws-res');
+    const wp = document.getElementById('ws-prog');
+    const wn = document.getElementById('ws-new');
+    if (ws) ws.textContent = s.resolved;
+    if (wp) wp.textContent = s.inprog;
+    if (wn) wn.textContent = s.newToday;
+  });
+</script>
+</body>
+</html>
